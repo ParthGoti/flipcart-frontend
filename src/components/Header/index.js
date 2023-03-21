@@ -10,7 +10,8 @@ import {
   DropdownMenu,
 } from "../MaterialUI";
 import { useDispatch, useSelector } from "react-redux";
-import { login, Signout } from "../../actions";
+import { login, Signout, signup as _signup } from "../../actions";
+import Cart from "../UI/Cart";
 
 /**
  * @author
@@ -19,13 +20,36 @@ import { login, Signout } from "../../actions";
 
 export const Header = (props) => {
   const [loginModal, setLoginModal] = useState(false);
+  const [signup, setSignup] = useState(false);
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const auth = useSelector((state) => state.auth);
+  const cart = useSelector((state) => state.cart);
   const dispatch = useDispatch();
 
+  const userSignup = () => {
+    console.log({ firstname, lastname, email, password });
+    const user = { firstname, lastname, email, password };
+
+    if (
+      firstname === "" ||
+      lastname === "" ||
+      email === "" ||
+      password === ""
+    ) {
+      return;
+    }
+    dispatch(_signup(user))
+  };
+
   const userLogin = () => {
-    dispatch(login({ email, password }));
+    if (signup) {
+      userSignup();
+    } else {
+      dispatch(login({ email, password }));
+    }
   };
 
   const logout = () => {
@@ -39,7 +63,7 @@ export const Header = (props) => {
   }, [auth.authenticate]);
 
   const renderLoggedInMenu = () => {
-    // console.log(auth)x
+    // console.log(auth)
     return (
       <DropdownMenu
         menu={<a className="fullName">{auth.user.fullname}</a>}
@@ -47,7 +71,7 @@ export const Header = (props) => {
           { label: "My Profile", href: "", icon: null },
           { label: "SuperCoin Zone", href: "", icon: null },
           { label: "Flipkart Plus Zone", href: "", icon: null },
-          { label: "Orders", href: "", icon: null },
+          { label: "Orders", href: "/account/orders", icon: null },
           { label: "Wishlist", href: "", icon: null },
           { label: "My Chats", href: "", icon: null },
           { label: "Coupons", href: "", icon: null },
@@ -64,14 +88,27 @@ export const Header = (props) => {
     return (
       <DropdownMenu
         menu={
-          <a className="loginButton" onClick={() => setLoginModal(true)}>
+          <a
+            className="loginButton"
+            onClick={() => {
+              setLoginModal(true);
+              setSignup(false);
+            }}
+          >
             Login
           </a>
         }
         menus={[
           { label: "My Profile", href: "", icon: null },
           { label: "Flipkart Plus Zone", href: "", icon: null },
-          { label: "Orders", href: "", icon: null },
+          {
+            label: "Orders",
+            href: "/account/orders",
+            icon: null,
+            onClick: () => {
+              !auth.authenticate && setLoginModal(true);
+            },
+          },
           { label: "Wishlist", href: "", icon: null },
           { label: "Rewards", href: "", icon: null },
           { label: "Gift Cards", href: "", icon: null },
@@ -79,7 +116,15 @@ export const Header = (props) => {
         firstMenu={
           <div className="firstmenu">
             <span>New Customer?</span>
-            <a style={{ color: "#2874f0" }}>Sign Up</a>
+            <a
+              style={{ color: "#2874f0" }}
+              onClick={() => {
+                setLoginModal(true);
+                setSignup(true);
+              }}
+            >
+              Sign Up
+            </a>
           </div>
         }
       />
@@ -96,38 +141,56 @@ export const Header = (props) => {
               <p>Get access to your Orders, Wishlist and Recommendations</p>
             </div>
             <div className="rightspace">
-              <MaterialInput
-                type="text"
-                label="Enter Email/Enter Mobile Number"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <div className="loginInputContainer">
+                {signup && (
+                  <MaterialInput
+                    type="text"
+                    label="First Name"
+                    value={firstname}
+                    onChange={(e) => setFirstname(e.target.value)}
+                  />
+                )}
+                {signup && (
+                  <MaterialInput
+                    type="text"
+                    label="Last Name"
+                    value={lastname}
+                    onChange={(e) => setLastname(e.target.value)}
+                  />
+                )}
+                <MaterialInput
+                  type="text"
+                  label="Enter Email/Enter Mobile Number"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
 
-              <MaterialInput
-                type="password"
-                label="Enter Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                rightElement={<a href="#">Forgot?</a>}
-              />
-              <MaterialButton
-                title="Login"
-                bgColor="#fb641b"
-                textColor="#ffffff"
-                style={{
-                  margin: "40px 0 20px 0",
-                }}
-                onClick={userLogin}
-              />
-              <p>OR</p>
-              <MaterialButton
-                title="Request OTP"
-                bgColor="#ffffff"
-                textColor="#2874f0"
-                style={{
-                  margin: "20px 0",
-                }}
-              />
+                <MaterialInput
+                  type="password"
+                  label="Enter Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  rightElement={<a href="#">Forgot?</a>}
+                />
+                <MaterialButton
+                  title={signup ? "Register" : "Login"}
+                  bgColor="#fb641b"
+                  textColor="#ffffff"
+                  style={{
+                    margin: "40px 0 20px 0",
+                  }}
+                  onClick={userLogin}
+                />
+                <p style={{ textAlign: "center" }}>OR</p>
+                <MaterialButton
+                  title="Request OTP"
+                  bgColor="#ffffff"
+                  textColor="#2874f0"
+                  style={{
+                    margin: "20px 0",
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -180,8 +243,8 @@ export const Header = (props) => {
             ]}
           />
           <div>
-            <a className="cart">
-              <IoIosCart />
+            <a href={`/cart`} className="cart">
+              <Cart count={Object.keys(cart.cartItems).length} />
               <span style={{ margin: "0 10px" }}>Cart</span>
             </a>
           </div>

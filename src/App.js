@@ -7,6 +7,10 @@ import { useEffect } from "react";
 import { isUserLoggedIn, updateCart } from "./actions";
 import { ProductDetailsPage } from './containers/ProductDetailsPage';
 import { CartPage } from "./containers/CartPage";
+import { CheckoutPage } from "./containers/CheckoutPage";
+import { OrderPage } from "./containers/OrderPage";
+import { OrderDetailsPage } from "./containers/OrderDetailsPage";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -19,13 +23,16 @@ function App() {
   }, [auth.authenticate]);
   useEffect(()=>{
     dispatch(updateCart());
-  },[])
+  },[auth.authenticate])
   return (
     <div className="App">
       <Router>
         <Switch>
           <Route path="/" exact component={HomePage}></Route>
           <Route path="/cart"  component={CartPage}></Route>
+          <Route path="/checkout"  component={CheckoutPage}></Route>
+          <Route path="/account/orders" component={OrderPage} />
+          <Route path="/order_deatails/:orderId" component={OrderDetailsPage} />
           <Route
             path="/:productSlug/:productId/p" exact
             component={ProductDetailsPage}
